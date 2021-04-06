@@ -1,7 +1,7 @@
 /* 
  * REPRESENTACAO DE GRAFOS - Versao 2021/1
  * Discentes:
- * 	 - Daniel Matrone - TIA: 41826213
+ *   - Daniel Matrone - TIA: 41826213
  *   - Gabriel Tardochi Salles - TIA: 41822730
  *   - Rodrigo Pigatto Pasquale - TIA: 41816080
  */
@@ -140,7 +140,7 @@ void imprimeGrafo(Vertice G[], int ordem){
 }
 /* Recebe um grafo G como argumento
  * e retorna a soma das marcas dos
- * vÈrtices de G.
+ * v√©rtices de G.
  */
 int verificaMarca(Vertice G[], int ordem){
 	int i;
@@ -156,7 +156,7 @@ int verificaMarca(Vertice G[], int ordem){
 /* Recebe um grafo G como argumento e
  * retorna:
  * 1, se o grafo for conexo; ou
- * 0, se o grafo n„o for conexo.
+ * 0, se o grafo n√£o for conexo.
  */
 int eConexo(Vertice G[], int ordem){
     G[0].marca = 1; /* inicializando qualquer vertice em 1 */
@@ -187,10 +187,10 @@ int eConexo(Vertice G[], int ordem){
 
 
 /* Recebe um grafo G como argumento e
- * calcula seu n˙mero de arestas e
+ * calcula seu n√∫mero de arestas e
  * retorna:
- * 1, se o grafo for uma ·rvore; ou
- * 0, se o grafo n„o for ·rvore.
+ * 1, se o grafo for uma √°rvore; ou
+ * 0, se o grafo n√£o for √°rvore.
  */
 int eArvore(Vertice G[], int ordem){
 	int tamanho = calculaTamanho(G, ordem);
