@@ -5,7 +5,6 @@
 ## Integrantes do grupo:
 
 * Daniel Matrone - TIA: 41826213 - e-mail: 41826213@mackenzista.com.br
-* Gabriel Ferreira de Carvalho - TIA: 41806107 - email: 41806107@mackenzista.com.br
 * Rodrigo Pigatto Pasquale - TIA: 41816080 - e-mail: 41816080@mackenzista.com.br
 
 
