@@ -1,0 +1,98 @@
+/*************************************************************
+  Download latest Blynk library here:
+    https://github.com/blynkkk/blynk-library/releases/latest
+
+  Blynk is a platform with iOS and Android apps to control
+  Arduino, Raspberry Pi and the likes over the Internet.
+  You can easily build graphic interfaces for all your
+  projects by simply dragging and dropping widgets.
+
+    Downloads, docs, tutorials: http://www.blynk.cc
+    Sketch generator:           http://examples.blynk.cc
+    Blynk community:            http://community.blynk.cc
+    Follow us:                  http://www.fb.com/blynkapp
+                                http://twitter.com/blynk_app
+
+  Blynk library is licensed under MIT license
+  This example code is in public domain.
+
+ *************************************************************
+
+  You’ll need:
+   - Blynk App (download from AppStore or Google Play)
+   - ESP8266 board
+   - Decide how to connect to Blynk
+     (USB, Ethernet, Wi-Fi, Bluetooth, ...)
+
+  There is a bunch of great example sketches included to show you how to get
+  started. Think of them as LEGO bricks  and combine them as you wish.
+  For example, take the Ethernet Shield sketch and combine it with the
+  Servo example, or choose a USB sketch and add a code from SendData
+  example.
+ *************************************************************/
+
+/* Comment this out to disable prints and save space */
+#define BLYNK_PRINT Serial
+
+//código final:
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+// You should get Auth Token in the Blynk App.
+// Go to the Project Settings (nut icon).
+char auth[] = "a34c5e74b1e74c3b9c8f4caf9ae57887";
+
+// Your WiFi credentials.
+// Set password to "" for open networks.
+char ssid[] = "Netwave_Pasquale";
+char pass[] = "netwave200417";
+int umid_solo;
+int umid_solo_tratada;
+WidgetLCD lcd(V2);
+void setup()
+{
+  // Debug console
+  Serial.begin(9600);
+  pinMode(D0, OUTPUT);
+  pinMode(A0, INPUT);
+  Blynk.begin(auth, ssid, pass);
+  // You can also specify server:
+  //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 80);
+  //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080);
+}
+BLYNK_WRITE(V0) {
+  int pinValue = param.asInt();
+  Serial.println(pinValue);
+  if (pinValue == 1) {
+    digitalWrite(D0, HIGH);
+  }
+  else {
+    digitalWrite(D0, LOW);
+  }
+}
+BLYNK_READ(V1) //Blynk app has something on V5
+{
+
+  umid_solo = analogRead(A0); //reading the sensor on A0
+  umid_solo_tratada = map(umid_solo, 1024, 100, 0, 100);
+  Blynk.virtualWrite(V1, umid_solo_tratada); //sending to Blynk
+  if (umid_solo_tratada >= 80) {
+    lcd.clear();
+    lcd.print(0, 0, "Não é necessário regar");
+  }
+  else if (umid_solo_tratada >= 50) {
+    lcd.clear();
+    lcd.print(0, 0, "Rega recomendada");
+  }
+  else {
+    lcd.clear();
+    lcd.print(0, 0, "Rega necessária");
+  }
+}
+void loop()
+{
+  Blynk.run();
+  // You can inject your own code or combine it with other sketches.
+  // Check other examples on how to communicate with Blynk. Remember
+  // to avoid delay() function!
+}
