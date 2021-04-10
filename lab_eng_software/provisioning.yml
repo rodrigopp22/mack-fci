@@ -1,0 +1,152 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: 'Atualização dos pacotes do Linux'
+    apt:
+      update_cache: yes
+
+- hosts: db
+  become: true
+  tasks:       
+    - name: 'Instalação das dependências MySQL'
+      apt:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+        - mysql-server
+        - python-mysqldb
+
+    - name: 'Criando arquivo para permitir conexões externas'
+      copy:
+        owner: root
+        mode: '0644'
+        src: db_server_files/allow_external.cnf
+        dest: /etc/mysql/conf.d/allow_external.cnf
+
+    - name: 'Reiniciando o servidor MySQL'
+      service:
+        name: mysql
+        state: restarted
+    
+    - name: 'Definindo senha do usuário root'
+      shell: mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('secret'); FLUSH PRIVILEGES;"
+        
+    - name: 'Criando banco de dados loja_schema'
+      shell: mysqladmin -u root -psecret create loja_schema
+
+    - name: 'Apagando usuários anônimos'
+      shell: mysql -u root -psecret -e "DELETE FROM mysql.user WHERE user='';FLUSH PRIVILEGES;"
+    
+    - name: 'Criando usuário loja'
+      shell: mysql -u root -psecret -e "GRANT ALL PRIVILEGES ON loja_schema.* TO 'loja'@'%'IDENTIFIED BY 'lojasecret';"
+      
+- hosts: web
+  become: true
+  tasks:
+    - name: 'Instalação das dependências do servidor Web'
+      apt:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+        - tomcat7
+        - maven2
+        - openjdk-6-jdk
+        - git
+        - mysql-client
+        - python-mysqldb
+
+    - name: 'Importando chave Tomcat para o servidor'
+      copy:
+        owner: root
+        group: tomcat7
+        src: web_server_files/.keystore
+        dest: /var/lib/tomcat7/conf/.keystore
+        mode: '0640'
+
+    - name: 'Importando arquivo server.xml'
+      copy:
+        owner: root
+        group: tomcat7
+        src: web_server_files/server.xml
+        dest: /var/lib/tomcat7/conf/server.xml
+        mode: '0644'
+
+    - name: 'Importando arquivo tomcat7'
+      copy:
+        owner: root
+        group: tomcat7
+        src: web_server_files/tomcat7
+        dest: /etc/default/tomcat7
+        mode: '0644'
+
+    - name: 'Reiniciando o Tomcat'
+      service:
+        name: tomcat7
+        state: restarted
+
+    - name: 'Importando o context.xml'
+      copy:
+        owner: root
+        group: tomcat7
+        src: web_server_files/context.xml
+        dest: /var/lib/tomcat7/conf/context.xml
+        mode: '0644'
+
+    - name: 'Fazendo o deploy da aplicação'
+      copy:
+        owner: root
+        group: tomcat7
+        src: web_server_files/devopsnapratica.war
+        dest: /var/lib/tomcat7/webapps/devopsnapratica.war
+        mode: '0644'   
+
+- hosts: monitor
+  become: true
+  tasks:
+    - name: 'Configurando sistema para usar a última versão Nagios'
+      copy:
+        owner: root
+        src: monitor_server_files/nagios
+        dest: /etc/apt/preferences.d/nagios
+        mode: '0644'
+
+    - name: 'Lista de pacotes Raring do Ubuntu'
+      copy:
+        owner: root
+        src: monitor_server_files/raring.list
+        dest: /etc/apt/sources.list.d/raring.list
+        mode: '0644'
+    
+    - name: 'Instalando Nagios3'
+      apt:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+        - nagios3
+        - unzip
+
+    - name: 'Descomprimindo arquivos'
+      ansible.builtin.unarchive:
+        owner: root
+        src: 'monitor_server_files/{{ item.src }}'
+        dest: '{{ item.dest }}'
+      with_items:
+        - { src: 'nagios3.zip', dest: '/etc/' }
+        - { src: 'config.zip', dest: '/etc/nagios-plugins/' }
+        
+    - name: 'Configurando o Nagios'
+      copy:
+        owner: root
+        src: monitor_server_files/loja_virtual.cfg
+        dest: /etc/nagios3/conf.d/loja_virtual.cfg
+        mode: '0644'
+    
+    - name: 'Reiniciando o Nagios'
+      service:
+        name: nagios3
+        state: reloaded
+...

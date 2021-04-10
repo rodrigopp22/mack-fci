@@ -1,0 +1,57 @@
+- hosts: db
+  become: true
+  tasks:       
+    - name: 'Instalação das dependências MySQL'
+      apt:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+        - mysql-server
+        - python-mysqldb
+
+    - name: 'Criando arquivo para permitir conexões externas'
+      copy:
+        owner: root
+        mode: '0644'
+        src: db_server_files/allow_external.cnf
+        dest: /etc/mysql/conf.d/allow_external.cnf
+
+    - name: 'Reiniciando o servidor MySQL'
+      service:
+        name: mysql
+        state: restarted
+    
+    - name: 'Definindo senha do usuário root'
+      shell: mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('secret'); FLUSH PRIVILEGES;"
+        
+    - name: 'Criando banco de dados loja_schema'
+      shell: mysqladmin -u root -psecret create loja_schema
+
+    - name: 'Apagando usuários anônimos'
+      shell: mysql -u root -psecret -e "DELETE FROM mysql.user WHERE user='';FLUSH PRIVILEGES;"
+    
+    - name: 'Criando usuário loja'
+      shell: mysql -u root -psecret -e "GRANT ALL PRIVILEGES ON loja_schema.* TO 'loja'@'%'IDENTIFIED BY 'lojasecret';"
+      
+
+
+          - name: ''
+
+    - name: 'Descomprimindo arquivos'
+      ansible.builtin.unarchive:
+        owner: root
+        src: 'monitor_server_files/{{ item.src }}'
+        dest: '{{ item.dest }}'
+      with_items:
+        - { src: 'nagios3.zip', dest: '/etc/nagios3' }
+        - { src: 'config.zip', dest: '/etc/nagios-plugins/config' }
+
+            - name: 'Removendo pastas'
+      file:
+        state: absent
+        path: '{{ item }}'
+      with_items:
+        - '/etc/nagios3/'
+        - '/etc/nagios-plugins/config/'
+    
