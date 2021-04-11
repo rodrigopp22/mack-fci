@@ -52,56 +52,36 @@
       vars:
         packages:
         - tomcat7
-        - maven2
-        - openjdk-6-jdk
-        - git
         - mysql-client
         - python-mysqldb
 
-    - name: 'Importando chave Tomcat para o servidor'
+    - name: 'Configurando o Tomcat'
       copy:
         owner: root
         group: tomcat7
-        src: web_server_files/.keystore
-        dest: /var/lib/tomcat7/conf/.keystore
-        mode: '0640'
-
-    - name: 'Importando arquivo server.xml'
-      copy:
-        owner: root
-        group: tomcat7
-        src: web_server_files/server.xml
-        dest: /var/lib/tomcat7/conf/server.xml
-        mode: '0644'
-
-    - name: 'Importando arquivo tomcat7'
-      copy:
-        owner: root
-        group: tomcat7
-        src: web_server_files/tomcat7
-        dest: /etc/default/tomcat7
-        mode: '0644'
+        src: 'web_server_files/{{ item. src }}'
+        dest: '{{ item.dest }}'
+        mode: '{{ item.mode }} '
+      with_items:
+        - { src: '.keystore', dest: '/var/lib/tomcat7/conf/.keystore' , mode: '0640'}
+        - { src: 'server.xml', dest: '/var/lib/tomcat7/conf/server.xml', mode: '0644'}
+        - { src: 'tomcat7', dest: '/etc/default/tomcat7', mode: '0644'}
 
     - name: 'Reiniciando o Tomcat'
       service:
         name: tomcat7
         state: restarted
 
-    - name: 'Importando o context.xml'
-      copy:
-        owner: root
-        group: tomcat7
-        src: web_server_files/context.xml
-        dest: /var/lib/tomcat7/conf/context.xml
-        mode: '0644'
-
     - name: 'Fazendo o deploy da aplicação'
       copy:
         owner: root
         group: tomcat7
-        src: web_server_files/devopsnapratica.war
-        dest: /var/lib/tomcat7/webapps/devopsnapratica.war
+        src: 'web_server_files/{{ item.src }}'
+        dest: '{{ item.dest }}'
         mode: '0644'   
+      with_items:
+        - { src: 'context.xml', dest: '/var/lib/tomcat7/conf/context.xml' }
+        - { src: 'devopsnapratica.war', dest: '/var/lib/tomcat7/webapps/devopsnapratica.war'}
 
 - hosts: monitor
   become: true
