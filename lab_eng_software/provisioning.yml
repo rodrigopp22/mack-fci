@@ -89,17 +89,13 @@
     - name: 'Configurando sistema para usar a última versão Nagios'
       copy:
         owner: root
-        src: monitor_server_files/nagios
-        dest: /etc/apt/preferences.d/nagios
+        src: 'monitor_server_files/{{ item.src }}'
+        dest: '{{ item.dest }}'
         mode: '0644'
+      with_items:
+        - { src: 'nagios', dest: '/etc/apt/preferences.d/nagios'}
+        - { src: 'raring.list', dest: '/etc/apt/sources.list.d/raring.list'}
 
-    - name: 'Lista de pacotes Raring do Ubuntu'
-      copy:
-        owner: root
-        src: monitor_server_files/raring.list
-        dest: /etc/apt/sources.list.d/raring.list
-        mode: '0644'
-    
     - name: 'Instalando Nagios3'
       apt:
         name: "{{ packages }}"
