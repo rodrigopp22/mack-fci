@@ -64,6 +64,15 @@ pg = ParserGenerator(['PROGRAM',
                                    'AND']),
                                  ('left', 'NOT')])
 
+@pg.production('program : PROGRAM identifier SEMICOLON block')
+def program(p):
+    return Program(p[1], p[3])
+
+@pg.production('block : variable_declaration_part subroutine_declaration_part statement_part')
+def block(p):
+    return Block(p[0], p[1], p[2])
+
+@pg.production('variable_declaration_part : VAR empty ')
 
 @pg.production('atrib : ID EQUALS expression')
 def attrib(p):
@@ -81,6 +90,26 @@ def expression_integer(p):
 @pg.production('expression : OPEN_PARENS expression CLOSE_PARENS')
 def expression_parens(p):
     return p[1]
+
+@pg.production('read_statement : READ OPEN_PARENS variable ')
+
+@pg.production('write_statement : WRITE OPEN_PARENS variable COMMA variable_list CLOSE_PARENS')
+
+@pg.production('structured_statement : compound_statement')
+
+@pg.production('structured_statement : if_statement')
+
+@pg.production('structured_statement : while_statement')
+
+@pg.production('if_statement : IF expression THEN statement')
+def if_then(p):
+    return If_statement(p[1], p[3])
+@pg.production(' if_statement : IF expression THEN statement ELSE statement')
+def if_else(p):
+    return If_else_statement(p[1], p[3], p[5])
+@pg.production('while_statement : WHILE expression DO statement')
+def while_statement(p):
+    return While_statement(p[1], p[3])
 
 
 @pg.production('expression : expression PLUS expression')
