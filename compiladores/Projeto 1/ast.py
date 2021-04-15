@@ -130,7 +130,7 @@ class Statement_part(BaseBox):
 
 class Compound_statement(BaseBox):
     def __init__(self, statement, statement_list):
-        self.statement = statement
+        self.statement = statementpython
         self.statement_list = statement_list
 
     def print(self):
@@ -263,12 +263,12 @@ class Not_equal(BinaryOp):
         return self.left.eval() != self.right.eval()
 
 
-class Lesser_than(BinaryOp):
+class Less_than(BinaryOp):
     def eval(self):
         return self.left.eval() < self.right.eval()
 
 
-class Lesser_or_equals(BinaryOp):
+class Less_or_equals(BinaryOp):
     def eval(self):
         return self.left.eval() <= self.right.eval()
 
@@ -293,103 +293,4 @@ class And(BinaryOp):
         return self.left.eval() and self.right.eval()
 
 
-pg = ParserGenerator(['PROGRAM',
-                      'VAR',
-                      'COMMA',
-                      'ARRAY',
-                      'OPEN_BRACKET',
-                      'CLOSE_BRACKET',
-                      'OF',
-                      'INDEX_RANGE',
-                      'INTEGER',
-                      'CHARACTER',
-                      'BOOLEAN',
-                      'PROCEDURE',
-                      'FUNCTION',
-                      'OPEN_PARENS',
-                      'CLOSE_PARENS',
-                      'SEMICOLON',
-                      'BEGIN',
-                      'END',
-                      'READ',
-                      'WRITE',
-                      'IF',
-                      'THEN',
-                      'ELSE',
-                      'WHILE',
-                      'DO',
-                      'NOT',
-                      'EQUALS',
-                      'NOT_EQUAL',
-                      'LESSER_THAN',
-                      'LESSER_OR_EQUALS',
-                      'GREATER_THAN',
-                      'GREATER_OR_EQUALS',
-                      'OR',
-                      'AND',
-                      'ATTRIBUTION',
-                      'DOT',
-                      'COLON',
-                      'PLUS',
-                      'MINUS',
-                      'MUL',
-                      'DIV',
-                      'INT_CONST',
-                      'CHAR_CONST',
-                      'IDENTIFIER'],
-                     precedence=[('left',
-                                  ['ELSE',
-                                   'THEN']), ('left',
-                                              ['EQUALS',
-                                               'NOT_EQUAL',
-                                               'LESSER_THAN',
-                                               'LESSER_OR_EQUALS',
-                                               'GREATER_THAN',
-                                               'GREATER_OR_EQUALS']), ('left',
-                                                                       ['PLUS',
-                                                                        'MINUS',
-                                                                        'OR']),
-                                 ('left',
-                                  ['MUL',
-                                   'DIV',
-                                   'AND']),
-                                 ('left', 'NOT')])
 
-
-@pg.production('atrib : ID EQUALS expression')
-def attrib(p):
-    return Attrib(p[0].getstr(), p[2])
-
-
-@pg.production('expression : NUMBER')
-def expression_number(p):
-    # p is a list of the pieces matched by the right hand side of the
-    # rule
-    return Number(int(p[0].getstr()))
-
-
-@pg.production('expression : OPEN_PARENS expression CLOSE_PARENS')
-def expression_parens(p):
-    return p[1]
-
-
-@pg.production('expression : expression PLUS expression')
-@pg.production('expression : expression MINUS expression')
-@pg.production('expression : expression MUL expression')
-@pg.production('expression : expression DIV expression')
-def expression_binop(p):
-    left = p[0]
-    right = p[2]
-    if p[1].gettokentype() == 'PLUS':
-        return Add(left, right)
-    elif p[1].gettokentype() == 'MINUS':
-        return Sub(left, right)
-    elif p[1].gettokentype() == 'MUL':
-        return Mul(left, right)
-    elif p[1].gettokentype() == 'DIV':
-        return Div(left, right)
-    else:
-        raise AssertionError('Oops, this should not be possible!')
-
-
-parser = pg.build()
