@@ -1,6 +1,6 @@
 from rply import ParserGenerator
 from rply.token import BaseBox, TokenToken
-from objects import *
+from ast import *
 
 pg = ParserGenerator(['PROGRAM',
                       'VAR',
