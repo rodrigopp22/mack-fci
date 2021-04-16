@@ -74,22 +74,55 @@ def block(p):
 
 @pg.production('variable_declaration_part : VAR empty ')
 
-@pg.production('atrib : ID EQUALS expression')
-def attrib(p):
-    return Attrib(p[0].getstr(), p[2])
+@pg.production('variable_declaration_part : variable_declaration SEMI_COLON, variable_declaration SEMI_COLON')
 
+@pg.production('variable_declaration : identifier, COMMA identifier, COLON type')
 
-@pg.production('expression : NUMBER')
-def expression_integer(p):
-    # p is a list of the pieces matched by the right hand side of the
-    # rule
-    return Number(int(p[0].getstr()))
+@pg.production('type : single_type')
+@pg.production('type : array_type')
 
+@pg.production('array_type : ARRAY OPEN_BRACKET index_range CLOSE_BRACKET OF simple_type')
 
+@pg.production('index_range : integer_const INDEX_RANGE integer_const')
 
-@pg.production('expression : OPEN_PARENS expression CLOSE_PARENS')
+@pg.production('simple_type : char')
+@pg.production('simple_type : integer')
+@pg.production('simple_type : boolean')
+
+@pg.production('type_identifier : identifier')
+
+@pg.production('subroutine_declaration_part : procedure_declaration')
+@pg.production('subroutine_declaration_part : function_declaration')
+
+@pg.production('procedure_declaration : PROCEDURE identifier formal_parameters SEMICOLON block')
+
+@pg.production('function_declaration : FUNCTION identifier formal_parameters COLON type SEMICOLON block')
+
+@pg.production('formal_parameters : OPEN_PARENS param_section CLOSE_PARENS')
 def expression_parens(p):
     return p[1]
+
+@pg.production('param_section : variable_declaration, SEMICOLON variable_declaration_list SEMICOLON')
+
+@pg.production('statement_part : compound_statement')
+
+@pg.production('compound_statement : BEGIN statement, SEMICOLON statement, END')
+
+@pg.production('statement : simple_statement')
+@pg.production('statement : structured_statement')
+
+@pg.production('simple_statement : assignment_statement')
+@pg.production('simple_statement : function_procedure_statement')
+@pg.production('simple_statement : read_statement')
+@pg.production('simple_statement : write_statement')
+
+@pg.production('assignment_statement : variable EQUALS expression')
+
+@pg.production('function_procedure_statement : function_procedure_identifier')
+
+@pg.production('function_procedure_statement : variable EQUALS function_procedure_identifier')
+
+@pg.production('function_procedure_identifier : identifier')
 
 @pg.production('read_statement : READ OPEN_PARENS variable ')
 
@@ -163,5 +196,38 @@ def expression_logical_binop(p):
         return Or(left, right)
     else:
         raise AssertionError("Oops, this shouldn't be possible")
+
+@pg.production('variable : entire_variable')
+@pg.production('variable : indexed_variable')
+
+@pg.production('indexed_variable : array_variable OPEN_BRACKET expression CLOSE_BRACKET')
+
+@pg.production('array_variable : entire_variable')
+
+@pg.production('entire_variable : variable_identifier')
+
+@pg.production('variable_identifier : identifier')
+
+@pg.production('constant : integer_const')
+
+@pg.production('constant : character_const')
+
+@pg.production('constant : constant_identifier')
+
+@pg.production('constant_identifier : identifier')
+
+@pg.production('identifier : letter, letter_or_digit')
+
+@pg.production('letter_or_digit : letter')
+@pg.production('letter_or_digit : digit')
+
+@pg.production('integer_const : digit, digits')
+
+@pg.production('character_const : SINGLE_QUOTE letter_or_digit SINGLE_QUOTE')
+@pg.production('character_const : DOUBLE_QUOTE letter_or_digit, letter_or_digit_list DOUBLE_QUOTE')
+
+@pg.production('letter : letter')
+@pg.production('digit: digit')
+
 
 parser = pg.build()
