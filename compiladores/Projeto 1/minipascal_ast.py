@@ -2,7 +2,6 @@ from rply.token import BaseBox
 from rply import ParserGenerator
 import lexer
 
-
 class BinaryOp(BaseBox):
     def __init__(self, left, right):
         self.left = left
@@ -40,11 +39,14 @@ class Block(BaseBox):
 
 
 class Variable_decl_part(BaseBox):
-    def __init__(self, variable_declaration):
+    def __init__(self, variable_declaration, variable_declaration_list):
         self.variable_declaration = variable_declaration
+        self.variable_declaration_list = variable_declaration_list
 
     def print(self):
         self.variable_declaration.print()
+        for var in self.variable_declaration_list:
+          var.print()
 
 
 class Variable_declaration(BaseBox):
@@ -144,11 +146,14 @@ class Formal_parameters(BaseBox):
 
 
 class Param_section(BaseBox):
-    def __init__(self, variable_decl):
+    def __init__(self, variable_decl, variable_decl_list):
         self.variable_decl = variable_decl
+        self.variable_decl_list = variable_decl_list
 
     def print(self):
         self.variable_decl.print()
+        for var in self.variable_decl_list:
+            var.print()
 
 
 class Statement_part(BaseBox):
@@ -160,11 +165,14 @@ class Statement_part(BaseBox):
 
 
 class Compound_statement(BaseBox):
-    def __init__(self, statement):
+    def __init__(self, statement, statements):
         self.statement = statement
+        self.statements = statements
 
     def print(self):
         self.statement.print()
+        for statement in self.statements:
+            statement.print()
 
 
 class Statement(BaseBox):
@@ -220,22 +228,29 @@ class Function_procedure_identifier(BaseBox):
 
 
 class Read_statement(BaseBox):
-    def __init__(self, variable):
+    def __init__(self, variable, arglist):
         self.variable = variable
+        self.arglist = arglist
 
     def print(self):
         self.variable.print()
+        for arg in arglist:
+            arg.print()
+
 
 
 class Write_statement(BaseBox):
-    def __init__(self, variable):
+    def __init__(self, variable, arglist):
         self.variable = variable
+        self.arglist = arglist
 
     def eval(self):
-        print(self.variable.eval())
+        return self.variable.eval()
 
     def print(self):
         self.variable.print()
+        for arg in self.arglist:
+            arg.print()
 
 
 class Structured_statement(BaseBox):

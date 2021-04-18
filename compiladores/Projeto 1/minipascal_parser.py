@@ -1,3 +1,4 @@
+from minipascal_ast import Compound_statement, Variable_decl_part, Variable_declaration
 from rply import ParserGenerator
 import warnings
 from ast import *
@@ -79,26 +80,27 @@ def block(p):
     return Block(p[0], p[1], p[2])
 
 
-
-@pg.production('variable_declaration_part : VAR variable_declaration SEMICOLON')
+@pg.production('variable_declaration_part : VAR variable_declaration SEMICOLON variable_declaration_list')
+@pg.production('variable_declaration_list : variable_declaration SEMICOLON')
+@pg.production('variable_declaration_list : variable_declaration variable_declaration_list')
+@pg.production('variable_declaration_list : ')
 @pg.production('variable_declaration_part : ')
 def variable_declaration_part(p):
     if len(p) == 0:
       return None
-    return Variable_decl_part(p[1])
+    elif len(p) < 3:
+        return Variable_decl_part(p[1], None)
+    return Variable_decl_part(p[1], p[3])
 
-# @pg.production('variable_declaration : identifier, COMMA identifier, COLON type')
 
-
-# talvez n funcione, multiplicidade
 @pg.production('variable_declaration : IDENTIFIER COLON type')
+@pg.production('variable_declaration : IDENTIFIER COMMA variable_declaration')
 def variable_declaration(p):
     return Variable_declaration(p[0], p[2])
 
-
-@pg.production('type : simple_type')
-@pg.production('type : array_type')
-def type(p):
+@pg.production('dtype : simple_type')
+@pg.production('dtype : array_type')
+def dtype(p):
     return Type(p[0])
 
 
@@ -149,6 +151,7 @@ def formal_parameters(p):
 
 
 @pg.production('param_section : variable_declaration')
+@pg.production('param_section : SEMICOLON param_section SEMICOLON param_section')
 def param_section(p):
     return Param_section(p[0])
 
@@ -157,10 +160,16 @@ def param_section(p):
 def statement_part(p):
     return Statement_part(p[0])
 
-
-@pg.production('compound_statement : BEGIN statement END')
+#compound_statement ::= begin statement {;statement} end
+@pg.production('compound_statement : BEGIN statement statement_list END')
+@pg.production('statement_list : ')
+@pg.production('statement_list : SEMICOLON statement statement_list')
 def compound_statement(p):
-    return Compound_statement(p[1])
+    if len(p) == 0:
+      return None
+    if len(p) > 2:
+        return Compound_statement(p[1], p[2])
+    return Compound_statement(p[1], None)
 
 
 @pg.production('statement : simple_statement')
@@ -197,14 +206,22 @@ def function_procedure_identifier(p):
     return Function_procedure_identifier(p[0])
 
 
-@pg.production('read_statement : READ OPEN_PARENS variable CLOSE_PARENS')
+@pg.production('var_list : ')
+@pg.production('var_list : COMMA variable var_list')
+
+@pg.production('read_statement : READ OPEN_PARENS variable var_list CLOSE_PARENS')
 def read_statement(p):
-    return Read_statement(p[2])
+  if len(p) == 0:
+      return None
+  return Read_statement(p[2], p[3])
 
 
-@pg.production('write_statement : WRITE OPEN_PARENS variable CLOSE_PARENS')
+@pg.production('write_statement : WRITE OPEN_PARENS variable var_list CLOSE_PARENS')
 def write_statement(p):
-    return Write_statement(p[2])
+  if len(p) == 0:
+      return None
+  return Write_statement(p[2], p[3])
+
 
 
 @pg.production('structured_statement : compound_statement')
@@ -228,10 +245,6 @@ def if_else_statement(p):
 @pg.production('while_statement : WHILE expression DO statement')
 def while_statement(p):
     return While_statement(p[1], p[3])
-
-# @pg.production('expression_simple : simple_expression')
-# def expression_simple(p):
-#     return Expression_simple(p[0])
 
 
 @pg.production('expression : expression EQUALS expression')
@@ -343,26 +356,6 @@ def entire_variable(p):
 def variable_identifier(p):
     return Variable_identifier(p[0])
 
-# @pg.production('constant : integer_const')
-
-# @pg.production('constant : character_const')
-
-# @pg.production('constant : constant_identifier')
-
-# @pg.production('constant_identifier : identifier')
-
-# @pg.production('identifier : letter, letter_or_digit')
-
-# @pg.production('letter_or_digit : letter')
-# @pg.production('letter_or_digit : digit')
-
-# @pg.production('integer_const : digit, digits')
-
-# @pg.production('character_const : SINGLE_QUOTE letter_or_digit SINGLE_QUOTE')
-# @pg.production('character_const : DOUBLE_QUOTE letter_or_digit, letter_or_digit_list DOUBLE_QUOTE')
-
-# @pg.production('letter : letter')
-# @pg.production('digit: digit')
 @pg.error
 def error_handler(token):
     raise ValueError("Ran into a %s where it wasn't expected" % token.gettokentype())
