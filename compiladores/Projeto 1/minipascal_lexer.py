@@ -91,7 +91,6 @@ lg.add('IDENTIFIER', r'[a-zA-z][a-zA-Z0-9]*')
 
 lg.ignore(r'\s+')
 lexer = lg.build()
-
 for token in lexer.lex(
         'var numero2, numeroB, soma : integer;begin write(A); read(a); write(Banana); read("numeroB"); soma := (numeroA + numeroB); write(Soma = , soma:5:-2 ); end'):
     print(token)
